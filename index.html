@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>QUESTIONÁRIO ODS</title>
+    <meta charset="UTF-8">
+    <meta name="Autor" content="Jonathas Teles de Oliveira">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Recicla Passos - Plataforma para facilitar a coleta seletiva e fornecer informações sobre os pontos de coleta na cidade de Passos.">
+    <meta name="keywords" content="reciclagem, coleta seletiva, ecoponto, Passos, meio ambiente">
+    <meta property="og:title" content="Recicla Passos - Coleta Seletiva e Reciclagem">
+    <meta property="og:description" content="Facilitando o acesso à informação sobre reciclagem e coleta seletiva na cidade de Passos.">
+    <meta property="og:image" content="imagens/logo-para-social.jpg">
+    <meta property="og:url" content="https://www.seusite.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+</head>  
+<style>
+    body{
+    background-color:  #b89c75;
+    font-family: Arial, Helvetica, sans-serif;
+    width: 80%;
+    margin: auto;
+    margin-bottom: 0%;
+    padding-bottom: 50px;
+    }
+    h1,h2{
+        margin-bottom: 0%;
+    }
+    h1{
+        background-color: #2b6a4b;
+        color: white;
+        height: 25px;
+        padding: 25px;
+        text-align: center;
+    }
+    h2{  
+        font-variant: normal;
+        font-style: bold;
+        margin-top: 3%;
+    }
+    .outline{
+        outline: 5px solid #70ec83;
+        height: auto;
+        width: auto;
+    }
+    .pergunta {
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pergunta h2 {
+        font-size: 20px;
+        margin: 0;
+    }
+    .color{
+        color:red;
+    }
+    .pergunta p {
+        font-size: 18px;
+        color: #333;
+    }
+    textarea {
+        width: 100%; /* Aumenta a largura da caixa */
+        height: auto; /* Altura ajustada automaticamente */
+        min-height: 50px; /* Altura mínima para evitar que fique muito pequena */
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical; /* Permite redimensionamento vertical */
+        box-sizing: border-box;
+    }
+    .button {
+            background-color: #4CAF50; /* Cor de fundo */
+            border: none; /* Remove a borda padrão */
+            color: white; /* Cor do texto */
+            padding: 15px 32px; /* Espaçamento interno */
+            text-align: center; /* Alinhamento do texto */
+            text-decoration: none; /* Remove o sublinhado */
+            display: inline-block; /* Permite que o botão esteja em linha */
+            font-size: 16px; /* Tamanho da fonte */
+            margin: 4px 2px; /* Margem */
+            cursor: pointer; /* Ícone de mão ao passar o mouse */
+            border-radius: 8px; /* Bordas arredondadas */
+            transition: background-color 0.3s ease; /* Efeito de transição ao passar o mouse */
+        }
+
+        /* Cor de fundo ao passar o mouse */
+        .button:hover {
+            background-color: #45a049;
+        }
+</style>
+<body>
+    <h1 class="outline">QUESTIONÁRIO ODS: Consumo e Produção Responsáveis</h1>
+    <h2><span class="color">Entrevistado: </span>Vigilante nas feiras das praças ROSÁRIO E MATRIZ da comunidade.</h2>
+    <form id="questionario">
+        <div class="pergunta">
+            <h2>1. O descarte de vidros e pilhas acontece de forma eficiente nos pontos da praça e na comunidade?</h2>
+            <textarea name="resposta1" placeholder="Digite sua resposta aqui..."></textarea>
+        </div>
+        <div class="pergunta">
+            <h2>2. Onde os vidros geralmente são encontrados após o uso? Você percebe algum desinteresse em reciclar vidro e pilhas? Se sim, pode explicar o motivo?</h2>
+            <textarea name="resposta2" placeholder="Digite sua resposta aqui..."></textarea>  
+        </div>
+        <div class="pergunta">  
+            <h2>3. Qual é a sua opinião sobre os ecopontos de vidros, remédios e pilhas na sua comunidade?</h2>
+            <textarea name="resposta3" placeholder="Digite sua resposta aqui..."></textarea>
+        </div>
+        <div class="pergunta">
+            <h2>4. O que poderia ser feito para melhorar o descarte correto desses materiais na comunidade?</h2>
+            <textarea name="resposta4" placeholder="Digite sua resposta aqui..."></textarea>
+        </div>
+        <div class="pergunta">
+            <h2>5. Você acha importante ter avisos educacionais, um site indicando pontos de coleta ou outras formas de comunicação para informar sobre os pontos de coleta de vidros, pilhas, baterias e remédios?</h2>
+            <textarea name="resposta5" placeholder="Digite sua resposta aqui..."></textarea>
+        </div>
+    </form>
+    <button type="button" class="button" onclick="gerarPDF()">Enviar Respostas (PDF)</button>
+
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+        // Inicialize o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let yOffset = 20;
+
+            const form = document.getElementById("questionario");
+            const textareas = form.querySelectorAll('textarea');
+
+            textareas.forEach((textarea, index) => {
+                const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
+                const answerText = textarea.value || "Resposta não fornecida";
+
+                doc.setFont("helvetica", "bold");
+                const linhasPergunta = doc.splitTextToSize(`${index + 1}. ${questionText}`, 180);
+                doc.text(linhasPergunta, 10, yOffset);
+                yOffset += linhasPergunta.length * 10 + 5;
+
+                doc.setFont("helvetica", "normal");
+                const linhasResposta = doc.splitTextToSize(answerText, 180);
+                doc.text(linhasResposta, 10, yOffset);
+
+                yOffset += linhasResposta.length * 10 + 15;
+
+                if (yOffset > 270) {
+                    doc.addPage();
+                    yOffset = 20;
+                }
+            });
+
+            // Converte o PDF para Blob e faz o upload
+            doc.save("respostas_questionario.pdf"); // Baixa o PDF localmente, se necessário
+            doc.output("blob").then(uploadPDF); // Converte para Blob e envia ao Firebase
+        }
+
+        function uploadPDF(blob) {
+            const storageRef = storage.ref();
+            const pdfRef = storageRef.child(`respostas/${Date.now()}.pdf`);
+
+            pdfRef.put(blob).then((snapshot) => {
+                console.log('PDF enviado com sucesso ao Firebase!');
+            }).catch((error) => {
+                console.error('Erro ao enviar PDF:', error);
+            });
+        }
+    </script>
+</body>
+</html>
