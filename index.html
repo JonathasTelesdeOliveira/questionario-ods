@@ -15,6 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>  
 <style>
     body{
@@ -127,17 +128,19 @@
     <script>
         // Configuração do Firebase
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyD6P1PVeeQZWs1PLuCEsW7WoYnwPISaGEY",
+            authDomain: "respostasods.firebaseapp.com",
+            projectId: "respostasods",
+            storageBucket: "respostasods.firebasestorage.app",
+            messagingSenderId: "357458899115",
+            appId: "1:357458899115:web:76a5885b8333167ac747ee",
+            measurementId: "G-4FGF9LTFJQ"
         };
-        // Inicialize o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+         // Inicialize o Firebase
+         const app = firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
 
+        // Função para gerar o PDF
         function gerarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -167,11 +170,11 @@
                 }
             });
 
-            // Converte o PDF para Blob e faz o upload
-            doc.save("respostas_questionario.pdf"); // Baixa o PDF localmente, se necessário
-            doc.output("blob").then(uploadPDF); // Converte para Blob e envia ao Firebase
+            doc.save("respostas_questionario.pdf"); // Baixar PDF
+            doc.output("blob").then(uploadPDF); // Enviar PDF para o Firebase
         }
 
+        // Função para upload do PDF
         function uploadPDF(blob) {
             const storageRef = storage.ref();
             const pdfRef = storageRef.child(`respostas/${Date.now()}.pdf`);
