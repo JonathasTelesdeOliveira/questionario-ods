@@ -133,6 +133,9 @@
             const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
             const answerText = textarea.value || "Resposta não fornecida";
             
+            console.log(`Pergunta ${index + 1}: ${questionText}`);
+            console.log(`Resposta: ${answerText}`);
+            
             txtContent += `Pergunta ${index + 1}: ${questionText}\n`;
             txtContent += `Resposta: ${answerText}\n\n`;
         });
@@ -148,13 +151,15 @@
         reader.onloadend = function() {
             const base64data = reader.result.split(',')[1];  // Converte o arquivo para base64
             
+            // Ajustando o modelo de e-mail
             const templateParams = {
                 to_name: "Jonathas Teles de Oliveira",
                 to_email: "jonathastelesoliveiramg@gmail.com",
-                message: `Segue em anexo o arquivo com as respostas do questionário:\n\n${txtContent}`,
-                attachment: base64data  // Passa o base64 sem link de download no corpo
+                message: `Segue em anexo o arquivo com as respostas do questionário:\n\n${txtContent}`,  // Incluindo o conteúdo das respostas
+                attachment: base64data  // Passa o base64 do arquivo como anexo
             };
 
+            // Envio do e-mail
             emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
                 .then(response => {
                     console.log("E-mail enviado com sucesso!", response.status, response.text);
