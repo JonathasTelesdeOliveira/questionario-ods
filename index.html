@@ -125,77 +125,72 @@
     </form>
     <button type="button" class="button" onclick="gerarPDF()">Enviar Respostas (PDF)</button>
 
-    <!-- Carrega as bibliotecas do Firebase e jsPDF -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Carrega jsPDF e EmailJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-    <script>
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6P1PVeeQZWs1PLuCEsW7WoYnwPISaGEY",
-            authDomain: "respostasods.firebaseapp.com",
-            projectId: "respostasods",
-            storageBucket: "respostasods.appspot.com", // Corrigido o domínio do storageBucket
-            messagingSenderId: "357458899115",
-            appId: "1:357458899115:web:76a5885b8333167ac747ee",
-            measurementId: "G-4FGF9LTFJQ"
-        };
-    
-        // Inicialize o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
-    
-        // Função para gerar o PDF
-        function gerarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let yOffset = 20;
-    
-            const form = document.getElementById("questionario");
-            const textareas = form.querySelectorAll('textarea');
-    
-            textareas.forEach((textarea, index) => {
-                const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
-                const answerText = textarea.value || "Resposta não fornecida";
-    
-                doc.setFont("helvetica", "bold");
-                const linhasPergunta = doc.splitTextToSize(`${index + 1}. ${questionText}`, 180);
-                doc.text(linhasPergunta, 10, yOffset);
-                yOffset += linhasPergunta.length * 10 + 5;
-    
-                doc.setFont("helvetica", "normal");
-                const linhasResposta = doc.splitTextToSize(answerText, 180);
-                doc.text(linhasResposta, 10, yOffset);
-    
-                yOffset += linhasResposta.length * 10 + 15;
-    
-                if (yOffset > 270) {
-                    doc.addPage();
-                    yOffset = 20;
-                }
-            });
-    
-            // Gera o PDF como blob e chama a função de upload
-            const pdfBlob = doc.output('blob');
-            uploadPDF(pdfBlob); // Envia o blob para o Firebase
-    
-            doc.save("respostas_questionario.pdf"); // Baixa o PDF localmente
-        }
-    
-        // Função para upload do PDF ao Firebase
-        function uploadPDF(blob) {
-            const storageRef = storage.ref();
-            const pdfRef = storageRef.child(`respostas/${Date.now()}.pdf`);
-    
-            pdfRef.put(blob).then((snapshot) => {
-                console.log('PDF enviado com sucesso ao Firebase!');
-                pdfRef.getDownloadURL().then((url) => {
-                    console.log('URL do PDF:', url); // Exibe a URL do PDF no console
+<script>
+    (function(){
+        emailjs.init("SUA_USER_ID");  // Insira seu ID do EmailJS aqui
+    })();
+
+    function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let yOffset = 20;
+
+        const form = document.getElementById("questionario");
+        const textareas = form.querySelectorAll('textarea');
+
+        textareas.forEach((textarea, index) => {
+            const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
+            const answerText = textarea.value || "Resposta não fornecida";
+
+            doc.setFont("helvetica", "bold");
+            const linhasPergunta = doc.splitTextToSize(`${index + 1}. ${questionText}`, 180);
+            doc.text(linhasPergunta, 10, yOffset);
+            yOffset += linhasPergunta.length * 10 + 5;
+
+            doc.setFont("helvetica", "normal");
+            const linhasResposta = doc.splitTextToSize(answerText, 180);
+            doc.text(linhasResposta, 10, yOffset);
+
+            yOffset += linhasResposta.length * 10 + 15;
+
+            if (yOffset > 270) {
+                doc.addPage();
+                yOffset = 20;
+            }
+        });
+
+        // Converte o PDF em blob e chama a função para enviar por e-mail
+        doc.save("respostas_questionario.pdf");
+        const pdfBlob = doc.output("blob");
+
+        enviarEmail(pdfBlob);
+    }
+
+    function enviarEmail(blob) {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = function() {
+            const base64data = reader.result.split(',')[1];
+            const templateParams = {
+                to_name: "Jonathas Teles de Oliveira",
+                to_email: "jonathastelesoliveiramg@gmail.com",
+                message: "Segue em anexo o PDF com as respostas do questionário.",
+                attachment: base64data // Anexo em base64
+            };
+
+            emailjs.send("service_uahpcpc", "service_uahpcpc", templateParams)
+                .then(response => {
+                    console.log("E-mail enviado com sucesso!", response.status, response.text);
+                }, error => {
+                    console.error("Erro ao enviar e-mail:", error);
                 });
-            }).catch((error) => {
-                console.error('Erro ao enviar PDF:', error);
-            });
-        }
-    </script>
-    
+        };
+    }
+</script>
+
+</body>
+</html>
