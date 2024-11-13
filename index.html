@@ -125,6 +125,11 @@
     </form>
     <button type="button" class="button" onclick="gerarPDF()">Enviar Respostas (PDF)</button>
 
+    <!-- Carrega as bibliotecas do Firebase e jsPDF -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
     <script>
         // Configuração do Firebase
         const firebaseConfig = {
