@@ -6,16 +6,15 @@
     <meta name="Autor" content="Jonathas Teles de Oliveira">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="twitter:card" content="summary_large_image">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>  
 <style>
     body{
-    background-color:  #b89c75;
-    font-family: Arial, Helvetica, sans-serif;
-    width: 80%;
-    margin: auto;
-    margin-bottom: 0%;
-    padding-bottom: 50px;
+        background-color:  #b89c75;
+        font-family: Arial, Helvetica, sans-serif;
+        width: 80%;
+        margin: auto;
+        margin-bottom: 0%;
+        padding-bottom: 50px;
     }
     h1,h2{
         margin-bottom: 0%;
@@ -70,24 +69,24 @@
         box-sizing: border-box;
     }
     .button {
-            background-color: #4CAF50; /* Cor de fundo */
-            border: none; /* Remove a borda padrão */
-            color: white; /* Cor do texto */
-            padding: 15px 32px; /* Espaçamento interno */
-            text-align: center; /* Alinhamento do texto */
-            text-decoration: none; /* Remove o sublinhado */
-            display: inline-block; /* Permite que o botão esteja em linha */
-            font-size: 16px; /* Tamanho da fonte */
-            margin: 4px 2px; /* Margem */
-            cursor: pointer; /* Ícone de mão ao passar o mouse */
-            border-radius: 8px; /* Bordas arredondadas */
-            transition: background-color 0.3s ease; /* Efeito de transição ao passar o mouse */
-        }
+        background-color: #4CAF50; /* Cor de fundo */
+        border: none; /* Remove a borda padrão */
+        color: white; /* Cor do texto */
+        padding: 15px 32px; /* Espaçamento interno */
+        text-align: center; /* Alinhamento do texto */
+        text-decoration: none; /* Remove o sublinhado */
+        display: inline-block; /* Permite que o botão esteja em linha */
+        font-size: 16px; /* Tamanho da fonte */
+        margin: 4px 2px; /* Margem */
+        cursor: pointer; /* Ícone de mão ao passar o mouse */
+        border-radius: 8px; /* Bordas arredondadas */
+        transition: background-color 0.3s ease; /* Efeito de transição ao passar o mouse */
+    }
 
-        /* Cor de fundo ao passar o mouse */
-        .button:hover {
-            background-color: #45a049;
-        }
+    /* Cor de fundo ao passar o mouse */
+    .button:hover {
+        background-color: #45a049;
+    }
 </style>
 <body>
     <h1 class="outline">QUESTIONÁRIO ODS: Consumo e Produção Responsáveis</h1>
@@ -114,74 +113,58 @@
             <textarea name="resposta5" placeholder="Digite sua resposta aqui..."></textarea>
         </div>
     </form>
-    <button type="button" class="button" onclick="gerarPDF()">Enviar Respostas (PDF)</button>
+    <button type="button" class="button" onclick="gerarTXT()">Enviar Respostas (TXT)</button>
 
-    <!-- Carrega jsPDF e EmailJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Carrega EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script>
     (function(){
-        emailjs.init("FVWW5e3QdyBF-Vh0Z");  // Insira seu ID do EmailJS aqui
+        emailjs.init("FVWW5e3QdyBF-Vh0Z");  // Seu ID do EmailJS
     })();
 
-    function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        let yOffset = 20;
-
+    // Função para gerar o arquivo TXT
+    function gerarTXT() {
+        let txtContent = "";
+        
         const form = document.getElementById("questionario");
         const textareas = form.querySelectorAll('textarea');
 
         textareas.forEach((textarea, index) => {
             const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
             const answerText = textarea.value || "Resposta não fornecida";
-
-            doc.setFont("helvetica", "bold");
-            const linhasPergunta = doc.splitTextToSize(`${index + 1}. ${questionText}`, 180);
-            doc.text(linhasPergunta, 10, yOffset);
-            yOffset += linhasPergunta.length * 10 + 5;
-
-            doc.setFont("helvetica", "normal");
-            const linhasResposta = doc.splitTextToSize(answerText, 180);
-            doc.text(linhasResposta, 10, yOffset);
-
-            yOffset += linhasResposta.length * 10 + 15;
-
-            if (yOffset > 270) {
-                doc.addPage();
-                yOffset = 20;
-            }
+            
+            txtContent += `Pergunta ${index + 1}: ${questionText}\n`;
+            txtContent += `Resposta: ${answerText}\n\n`;
         });
 
-        // Converte o PDF em blob e chama a função para enviar por e-mail
-        doc.save("respostas_questionario.pdf");
-        const pdfBlob = doc.output("blob");
-
-        enviarEmail(pdfBlob);
+        // Cria o Blob e chama a função para enviar por e-mail
+        const blob = new Blob([txtContent], { type: 'text/plain' });
+        enviarEmail(blob);  // Passa o blob para a função de envio
     }
 
     function enviarEmail(blob) {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = function() {
-            const base64data = reader.result.split(',')[1];
-            const templateParams = {
-                to_name: "Jonathas Teles de Oliveira",
-                to_email: "jonathastelesoliveiramg@gmail.com",
-                message: "Segue em anexo o PDF com as respostas do questionário.",
-                attachment: base64data // Anexo em base64
-                
-            };
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function() {
+        const base64data = reader.result.split(',')[1];  // Extrai a parte base64 da string
 
-            emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
-                .then(response => {
-                    console.log("E-mail enviado com sucesso!", response.status, response.text);
-                }, error => {
-                    console.error("Erro ao enviar e-mail:", error);
-                });
+        const templateParams = {
+            to_name: "Jonathas Teles de Oliveira",
+            to_email: "jonathastelesoliveiramg@gmail.com",
+            message: "Segue em anexo o arquivo com as respostas do questionário.",
+            attachment: base64data  // Apenas passe o base64 sem link de download no corpo
         };
-    }
+
+        emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
+            .then(response => {
+                console.log("E-mail enviado com sucesso!", response.status, response.text);
+            }, error => {
+                console.error("Erro ao enviar e-mail:", error);
+            });
+    };
+}
+
 </script>
 
 </body>
