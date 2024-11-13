@@ -142,12 +142,12 @@
 
         // Função para gerar o PDF
         function gerarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let yOffset = 20;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let yOffset = 20;
 
-    const form = document.getElementById("questionario");
-    const textareas = form.querySelectorAll('textarea');
+            const form = document.getElementById("questionario");
+            const textareas = form.querySelectorAll('textarea');
 
             textareas.forEach((textarea, index) => {
                 const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
@@ -170,19 +170,18 @@
                 }
             });
 
-    // Usa doc.output('blob') para obter o PDF como um blob
-    const pdfBlob = doc.output('blob');
-    doc.save("respostas_questionario.pdf"); // Baixa o PDF localmente
+            // Usa doc.output('blob') para obter o PDF como um blob
+            const pdfBlob = doc.output('blob');
+            doc.save("respostas_questionario.pdf"); // Baixa o PDF localmente
 
-    // Envia o PDF para o Firebase
-    uploadPDF(pdfBlob); // Passa o blob para a função de upload
-}
+            // Envia o PDF para o Firebase
+            uploadPDF(pdfBlob); // Passa o blob para a função de upload
 
 
             doc.save("respostas_questionario.pdf"); // Baixar PDF
             doc.output("blob").then(uploadPDF); // Enviar PDF para o Firebase
+        
         }
-
         // Função para upload do PDF
         function uploadPDF(blob) {
             const storageRef = storage.ref();
