@@ -117,7 +117,6 @@
 
     <!-- Carrega EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
 <script>
     (function(){
         emailjs.init("FVWW5e3QdyBF-Vh0Z");  // Seu ID do EmailJS
@@ -140,32 +139,31 @@
 
         // Cria o Blob e chama a função para enviar por e-mail
         const blob = new Blob([txtContent], { type: 'text/plain' });
-        enviarEmail(blob);  // Passa o blob para a função de envio
+        enviarEmail(blob, txtContent);  // Passa o blob e txtContent para a função de envio
     }
 
-    function enviarEmail(blob) {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    reader.onloadend = function() {
-        const base64data = reader.result.split(',')[1];  // Extrai a parte base64 da string
+    function enviarEmail(blob, txtContent) {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = function() {
+            const base64data = reader.result.split(',')[1];  // Converte o arquivo para base64
+            
+            const templateParams = {
+                to_name: "Jonathas Teles de Oliveira",
+                to_email: "jonathastelesoliveiramg@gmail.com",
+                message: `Segue em anexo o arquivo com as respostas do questionário:\n\n${txtContent}`,
+                attachment: base64data  // Passa o base64 sem link de download no corpo
+            };
 
-        const templateParams = {
-            to_name: "Jonathas Teles de Oliveira",
-            to_email: "jonathastelesoliveiramg@gmail.com",
-            message: "Segue em anexo o arquivo com as respostas do questionário.",
-            attachment: base64data  // Apenas passe o base64 sem link de download no corpo
+            emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
+                .then(response => {
+                    console.log("E-mail enviado com sucesso!", response.status, response.text);
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar e-mail:", error);
+                });
         };
-
-        emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
-            .then(response => {
-                console.log("E-mail enviado com sucesso!", response.status, response.text);
-            }, error => {
-                console.error("Erro ao enviar e-mail:", error);
-            });
-    };
-}
-
+    }
 </script>
-
 </body>
 </html>
