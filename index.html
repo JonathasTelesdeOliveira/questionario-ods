@@ -94,48 +94,101 @@
     <form id="questionario">
         <div class="pergunta">
             <h2>1. O descarte de vidros e pilhas acontece de forma eficiente nos pontos da praça e na comunidade?</h2>
-            <textarea name="resposta1" placeholder="Digite sua resposta aqui..."></textarea>
+            <label><input type="radio" name="resposta1" value="Sim"> Sim</label>
+            <label><input type="radio" name="resposta1" value="Não"> Não</label>
+            <label><input type="radio" name="resposta1" value="Parcialmente"> Parcialmente</label>
         </div>
+    
         <div class="pergunta">
-            <h2>2. Onde os vidros geralmente são encontrados após o uso? Você percebe algum desinteresse em reciclar vidro e pilhas? Se sim, pode explicar o motivo?</h2>
-            <textarea name="resposta2" placeholder="Digite sua resposta aqui..."></textarea>  
+            <h2>2. Onde os vidros geralmente são encontrados após o uso? Você percebe algum desinteresse em reciclar vidro e pilhas?</h2>
+            <select name="resposta2_local">
+                <option value="">Escolha uma opção...</option>
+                <option value="Lixeiras públicas">Lixeiras públicas</option>
+                <option value="Ecopontos">Ecopontos</option>
+                <option value="Ruas">Ruas</option>
+                <option value="Outros">Outros</option>
+            </select>
+    
+            <h3>Motivo para o desinteresse:</h3>
+            <label><input type="radio" name="resposta2_motivo" value="Falta de incentivo"> Falta de incentivo</label>
+            <label><input type="radio" name="resposta2_motivo" value="Desconhecimento"> Desconhecimento</label>
         </div>
-        <div class="pergunta">  
+    
+        <div class="pergunta">
             <h2>3. Qual é a sua opinião sobre os ecopontos de vidros, remédios e pilhas na sua comunidade?</h2>
-            <textarea name="resposta3" placeholder="Digite sua resposta aqui..."></textarea>
+            <label><input type="radio" name="resposta3" value="Positiva"> Positiva</label>
+            <label><input type="radio" name="resposta3" value="Neutra"> Neutra</label>
+            <label><input type="radio" name="resposta3" value="Negativa"> Negativa</label>
+
+            <h4>Motivo para o desinteresse:</h4>
+            <label><input type="radio" name="resposta3_motivo" value="Falta de incentivo"> Falta de incentivo</label>
+            <label><input type="radio" name="resposta3_motivo" value="Desconhecimento"> Desconhecimento</label>
         </div>
+    
         <div class="pergunta">
             <h2>4. O que poderia ser feito para melhorar o descarte correto desses materiais na comunidade?</h2>
-            <textarea name="resposta4" placeholder="Digite sua resposta aqui..."></textarea>
+            <textarea name="resposta4" placeholder="Sugira melhorias (exemplo: Mais ecopontos, Melhor sinalização, Campanhas educativas)"></textarea>
         </div>
+    
         <div class="pergunta">
             <h2>5. Você acha importante ter avisos educacionais, um site indicando pontos de coleta ou outras formas de comunicação para informar sobre os pontos de coleta de vidros, pilhas, baterias e remédios?</h2>
-            <textarea name="resposta5" placeholder="Digite sua resposta aqui..."></textarea>
+            <label><input type="radio" name="resposta5" value="Muito Importante"> Muito Importante</label>
+            <label><input type="radio" name="resposta5" value="Importante"> Importante</label>
+            <label><input type="radio" name="resposta5" value="Pouco Importante"> Pouco Importante</label>
         </div>
     </form>
+    
     <button type="button" class="button" onclick="gerarTXT()">Enviar Respostas (TXT)</button>
-
-    <!-- Carrega EmailJS -->
+    
+<!-- Carrega EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
-    (function(){
+    (function() {
         emailjs.init("FVWW5e3QdyBF-Vh0Z");  // Seu ID do EmailJS
     })();
 
     // Função para gerar o arquivo TXT
+
     function gerarTXT() {
         let txtContent = "";
-        
         const form = document.getElementById("questionario");
-        const textareas = form.querySelectorAll('textarea');
 
-        textareas.forEach((textarea, index) => {
-            const questionText = textarea.previousElementSibling ? textarea.previousElementSibling.textContent : 'Pergunta sem título';
-            const answerText = textarea.value || "Resposta não fornecida";
-            
+        // Coleta todas as perguntas
+        const perguntas = form.querySelectorAll(".pergunta");
+
+        perguntas.forEach((pergunta, index) => {
+            const questionText = pergunta.querySelector("h2").textContent.trim();
+            let answerText = "Resposta não fornecida";
+
+            // Coleta todas as respostas de cada pergunta individualmente
+            let respostas = [];
+
+            // Verifica se é um select com uma opção selecionada
+            const select = pergunta.querySelector("select");
+            if (select && select.value) {
+                respostas.push(`Resposta local: ${select.value}`);
+            }
+
+            // Verifica se há um campo `radio` selecionado para o motivo (ex.: resposta2_motivo ou resposta3_motivo)
+            const selectedMotivos = pergunta.querySelectorAll("input[type='radio']:checked");
+            selectedMotivos.forEach(motivo => {
+                respostas.push(`Motivo: ${motivo.value}`);
+            });
+
+            // Verifica se é um textarea com texto
+            const textarea = pergunta.querySelector("textarea");
+            if (textarea && textarea.value) {
+                respostas.push(`Sugestão: ${textarea.value}`);
+            }
+
+            // Se nenhuma resposta foi encontrada, define como "Resposta não fornecida"
+            if (respostas.length > 0) {
+                answerText = respostas.join("; ");
+            }
+
             console.log(`Pergunta ${index + 1}: ${questionText}`);
             console.log(`Resposta: ${answerText}`);
-            
+
             txtContent += `Pergunta ${index + 1}: ${questionText}\n`;
             txtContent += `Resposta: ${answerText}\n\n`;
         });
@@ -144,7 +197,7 @@
         const blob = new Blob([txtContent], { type: 'text/plain' });
         enviarEmail(blob, txtContent);  // Passa o blob e txtContent para a função de envio
     }
-
+    
     function enviarEmail(blob, txtContent) {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
