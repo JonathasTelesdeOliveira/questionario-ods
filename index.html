@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>QUESTIONÁRIO ODS</title>
+    <title>QUESTIONÁRIO ODS 11 Cidades e Comunidades Sustentáveis</title>
     <meta charset="UTF-8">
     <meta name="Autor" content="Jonathas Teles de Oliveira">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,10 +31,25 @@
         font-style: bold;
         margin-top: 3%;
     }
+    h1, h4 {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 0;
+    }
+    input[type="text"] {
+    display: block;
+    padding: 8px;
+    margin-top: 0;
+    font-size: 16px;
+    margin-bottom: 10PX;
+    width: auto;
+    height: 20PX;
+
+}
     .outline{
-        outline: 5px solid #70ec83;
-        height: auto;
-        width: auto;
+    outline: 5px solid #70ec83;
+    height: auto;
+    width: auto;
     }
     .pergunta {
         margin-bottom: 20px;
@@ -96,9 +111,11 @@
     }
 </style>
 <body>
-    <h1 class="outline">QUESTIONÁRIO ODS: Consumo e Produção Responsáveis</h1>
-    <h2><span class="color">Entrevistado: </span>Vigilante nas feiras das praças ROSÁRIO E MATRIZ da comunidade.</h2>
+    <h1 class="outline">QUESTIONÁRIO ODS: 11 <br>
+        Cidades e Comunidades Sustentáveis</h1>
     <form id="questionario">
+        <h4><span class="color ">NOME DO ENTREVISTADO: </span> </h4>
+        <input type="text" id="nome" name="nome" placeholder="Digite seu nome">
         <div class="pergunta">
             <h2>1. O descarte de vidros e pilhas acontece de forma eficiente nos pontos da praça e na comunidade?</h2>
             <label><input type="radio" name="resposta1" value="Sim"> Sim</label>
@@ -171,6 +188,10 @@
 
             // Coleta todas as respostas de cada pergunta individualmente
             let respostas = [];
+
+            // PEGA O NOME DO ENTREVISTADO
+            const nomeEntrevistado = document.getElementById("nome").value;
+            txtContent += `Nome do Entrevistado: ${nomeEntrevistado}\n\n`;
 
             // Verifica se é um select com uma opção selecionada
             const select = pergunta.querySelector("select");
