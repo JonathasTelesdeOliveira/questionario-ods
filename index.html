@@ -20,7 +20,7 @@
         margin-bottom: 0%;
     }
     h1{
-        background-color: #2b6a4b;
+        background-color: #2f9c66;
         color: white;
         height: 25px;
         padding: 25px;
@@ -31,25 +31,36 @@
         font-style: bold;
         margin-top: 3%;
     }
-    h1, h4 {
-    display: block;
-    font-size: 24px;
-    margin-bottom: 0;
+    h1, h5 {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 0;
+        margin-top: 5px;
+        color: #1c3f1d;
     }
     input[type="text"] {
-    display: block;
-    padding: 8px;
-    margin-top: 0;
-    font-size: 16px;
-    margin-bottom: 10PX;
-    width: auto;
-    height: 20PX;
+        display: block;
+        padding: 8px;
+        font-size: 16px;
+        margin-top: 0;
+        width: auto;
+        height: 20PX;
 
-}
+    }
+    input[type="number"] {
+        display: block;
+        padding: 8px;
+        font-size: 16px;
+        width: 50px;
+        height: 30px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
     .outline{
-    outline: 5px solid #70ec83;
-    height: auto;
-    width: auto;
+        outline: 5px solid #70ec83;
+        height: auto;
+        width: auto;
     }
     .pergunta {
         margin-bottom: 20px;
@@ -64,9 +75,6 @@
     .pergunta h2 {
         font-size: 20px;
         margin: 0;
-    }
-    .color{
-        color:red;
     }
     .pergunta p {
         font-size: 18px;
@@ -114,8 +122,13 @@
     <h1 class="outline">QUESTIONÁRIO ODS: 11 <br>
         Cidades e Comunidades Sustentáveis</h1>
     <form id="questionario">
-        <h4><span class="color ">NOME DO ENTREVISTADO: </span> </h4>
-        <input type="text" id="nome" name="nome" placeholder="Digite seu nome">
+        <div>
+            <h5><span>NOME DO ENTREVISTADO(A): </span> </h5>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome">
+            <h5><span>IDADE DO ENTREVISTADO(A): </span></h5>
+            <input type="number" id="idade" name="idade" placeholder="Digite sua idade" min="0" max="120" required>
+
+        </div>
         <div class="pergunta">
             <h2>1. O descarte de vidros e pilhas acontece de forma eficiente nos pontos da praça e na comunidade?</h2>
             <label><input type="radio" name="resposta1" value="Sim"> Sim</label>
@@ -162,7 +175,7 @@
         </div>
     </form>
     
-    <button type="button" class="button" onclick="gerarTXT()">Enviar Respostas (TXT)</button>
+    <button id="btnEnviar" type="button" class="button" onclick="gerarTXT()">ENVIAR QUESTIONÁRIO</button>
 
     <div id="aviso" style="display:none; color: #ff0202; font-weight: bold;">Formulário enviado com sucesso!</div>
     
@@ -172,75 +185,90 @@
     (function() {
         emailjs.init("FVWW5e3QdyBF-Vh0Z");  // Seu ID do EmailJS
     })();
-
+    let envioCount = 0; // Contador de envios
+    const maxEnvios = 2; // Limite máximo de envios
     // Função para gerar o arquivo TXT
 
     function gerarTXT() {
-        let txtContent = "";
-        const form = document.getElementById("questionario");
 
-        // Coleta todas as perguntas
-        const perguntas = form.querySelectorAll(".pergunta");
+    let txtContent = "";
 
-        perguntas.forEach((pergunta, index) => {
-            const questionText = pergunta.querySelector("h2").textContent.trim();
-            let answerText = "Resposta não fornecida";
+    const form = document.getElementById("questionario");
 
-            // Coleta todas as respostas de cada pergunta individualmente
-            let respostas = [];
+    // Pega o Nome e a Idade
+    const nomeEntrevistado = document.getElementById("nome").value.trim();
+    const idadeEntrevistado = document.getElementById("idade").value.trim();
 
-            // PEGA O NOME DO ENTREVISTADO
-            const nomeEntrevistado = document.getElementById("nome").value;
-            txtContent += `Nome do Entrevistado: ${nomeEntrevistado}\n\n`;
+    // Validações do Nome e Idade
+    if (!nomeEntrevistado) {
+        alert("Por favor, insira o nome do entrevistado.");
+        return;
+    }
+    if (!idadeEntrevistado || idadeEntrevistado < 0 || idadeEntrevistado > 120) {
+        alert("Por favor, insira uma idade válida entre 0 e 120.");
+        return;
+    }
 
-            // Verifica se é um select com uma opção selecionada
-            const select = pergunta.querySelector("select");
-            if (select && select.value) {
-                respostas.push(`Resposta local: ${select.value}`);
-            }
+    // Adiciona Nome e Idade ao conteúdo do TXT
+    txtContent += `Nome do Entrevistado: ${nomeEntrevistado}\n`;
+    txtContent += `Idade do Entrevistado: ${idadeEntrevistado}\n\n`;
 
-            // Verifica se há um campo `radio` selecionado para o motivo (ex.: resposta2_motivo ou resposta3_motivo)
-            const selectedMotivos = pergunta.querySelectorAll("input[type='radio']:checked");
-            selectedMotivos.forEach(motivo => {
-                respostas.push(`Motivo: ${motivo.value}`);
-            });
+    // Coleta todas as perguntas do formulário
+    const perguntas = form.querySelectorAll(".pergunta");
 
-            // Verifica se é um textarea com texto
-            const textarea = pergunta.querySelector("textarea");
-            if (textarea && textarea.value) {
-                respostas.push(`Sugestão: ${textarea.value}`);
-            }
+    perguntas.forEach((pergunta, index) => {
+        const questionText = pergunta.querySelector("h2").textContent.trim();
+        let answerText = "Resposta não fornecida";
 
-            // Se nenhuma resposta foi encontrada, define como "Resposta não fornecida"
-            if (respostas.length > 0) {
-                answerText = respostas.join("; ");
-            }
+        // Coleta todas as respostas de cada pergunta individualmente
+        let respostas = [];
 
-            console.log(`Pergunta ${index + 1}: ${questionText}`);
-            console.log(`Resposta: ${answerText}`);
+        // Verifica se é um select com uma opção selecionada
+        const select = pergunta.querySelector("select");
+        if (select && select.value) {
+            respostas.push(`Resposta local: ${select.value}`);
+        }
 
-            txtContent += `Pergunta ${index + 1}: ${questionText}\n`;
-            txtContent += `Resposta: ${answerText}\n\n`;
+        // Verifica se há um campo `radio` selecionado
+        const selectedMotivos = pergunta.querySelectorAll("input[type='radio']:checked");
+        selectedMotivos.forEach(motivo => {
+            respostas.push(`Motivo: ${motivo.value}`);
         });
 
-        // Cria o Blob e chama a função para enviar por e-mail
-        const blob = new Blob([txtContent], { type: 'text/plain' });
-        enviarEmail(blob, txtContent);  // Passa o blob e txtContent para a função de envio
-    }
-    
-    function enviarEmail(blob, txtContent) {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = function() {
-            const base64data = reader.result.split(',')[1];  // Converte o arquivo para base64
-            
-            // Ajustando o modelo de e-mail
-            const templateParams = {
-                to_name: "Jonathas Teles de Oliveira",
-                to_email: "jonathastelesoliveiramg@gmail.com",
-                message: `Segue em anexo o arquivo com as respostas do questionário:\n\n${txtContent}`,  // Incluindo o conteúdo das respostas
-                attachment: base64data  // Passa o base64 do arquivo como anexo
-            };
+        // Verifica se é um textarea com texto
+        const textarea = pergunta.querySelector("textarea");
+        if (textarea && textarea.value) {
+            respostas.push(`Sugestão: ${textarea.value.trim()}`);
+        }
+
+        // Se nenhuma resposta foi encontrada, define como "Resposta não fornecida"
+        if (respostas.length > 0) {
+            answerText = respostas.join("; ");
+        }
+
+        // Adiciona a pergunta e resposta ao conteúdo do TXT
+        txtContent += `Pergunta ${index + 1}: ${questionText}\n`;
+        txtContent += `Resposta: ${answerText}\n\n`;
+    });
+
+    // Cria o Blob e chama a função para enviar por e-mail
+    const blob = new Blob([txtContent], { type: 'text/plain' });
+    enviarEmail(blob, txtContent);  // Passa o blob e txtContent para a função de envio
+}
+
+function enviarEmail(blob, txtContent) {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function() {
+        const base64data = reader.result.split(',')[1];  // Converte o arquivo para base64
+        
+        // Ajustando o modelo de e-mail
+        const templateParams = {
+            to_name: "Jonathas Teles de Oliveira",
+            to_email: "jonathastelesoliveiramg@gmail.com",
+            message: `Segue em anexo o arquivo com as respostas do questionário:\n\n${txtContent}`,  // Incluindo o conteúdo das respostas
+            attachment: base64data  // Passa o base64 do arquivo como anexo
+        };
 
             // Envio do e-mail
             emailjs.send("service_uahpcpc", "template_p41rp2y", templateParams)
@@ -250,6 +278,19 @@
                         setTimeout(function() {
                             document.getElementById('aviso').style.display = 'none';  // Esconde após 3 segundos
                     }, 3000);
+                envioCount++;
+                alert(`Envio realizado com sucesso!\n
+                        (SE NÃO RESPONDEU TENTE NOVAMENTE!!!) ${maxEnvios - envioCount} vez(es).`);
+                if (envioCount >= maxEnvios) {
+                    const btnEnviar = document.getElementById("btnEnviar");
+                    btnEnviar.disabled = true; // Desativa o botão
+                    btnEnviar.textContent = "Limite de envios atingido"; // Altera o texto do botão
+                    btnEnviar.style.backgroundColor = "#d3d3d3"; // Opcional: muda a cor para indicar desativado
+                    alert("Você atingiu o limite de envios. Obrigado por participar!");
+                    return;
+                }
+
+
                 })
                 .catch(error => {
                     console.error("Erro ao enviar e-mail:", error);
